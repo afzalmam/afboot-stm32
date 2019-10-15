@@ -4,7 +4,7 @@
 # Note that we use "$@" to let each command-line parameter expand to a
 # separate word. The quotes around "$@" are essential!
 # We need TEMP as the 'eval set --' would nuke the return value of getopt.
-TEMP=$(getopt -o 'b::d::hk:' --long 'bootloader::,devicetree::,help,kernel:' -n 'flash.sh' -- "$@")
+TEMP=$(getopt -o 'ab::d::hk:' --long 'appended,bootloader::,devicetree::,help,kernel:' -n 'flash.sh' -- "$@")
 if [ $? -ne 0 ]; then
 	echo 'Terminating...' >&2
 	exit 1
@@ -16,6 +16,8 @@ unset TEMP
 usage ()
 {
  echo "Usage: $0 -b<bootloader path>|--bootloader=<bootloader path> -d<devicetree path>|--devicetree=<devicetree path> -k<kernel path>|--kernel=<kernel path>"
+ echo "OR"
+ echo "Usage: $0 -b<bootloader path>|--bootloader=<bootloader path> -a|--appended -k<kernel path>|--kernel=<kernel path>"
 }
 
 while true; do
@@ -23,6 +25,11 @@ while true; do
 		'-h'|'--help')
 			usage
 			exit 1
+		;;
+		'-a'|'--appended')
+			APPENDED=1
+			shift
+			continue
 		;;
 		'-b'|'--bootloader')
 			BOOTLOADER=1
@@ -66,6 +73,17 @@ while true; do
 	esac
 done
 
+if [ -v DEVICETREE ] && [ -v APPENDED ]; then
+	echo "incompatible options passed: devicetree & appended bootloader"
+	exit 1
+fi
+
+if [ -v APPENDED ]; then
+	BOOTLOADER_FILE=${BOOTLOADER_PATH}/stm32f429i-disco.bindtb
+else
+	BOOTLOADER_FILE=${BOOTLOADER_PATH}/stm32f429i-disco.bin
+fi
+
 if [ -v DEVICETREE ]; then
 	if [ ! -v DEVICETREE_PATH ]; then
 		if [ -v KERNEL ]; then
@@ -90,15 +108,13 @@ if [ -v DEVICETREE ]; then
 	fi
 fi
 
-if [ -v BOOTLOADER ]; then
-	if [ ! -d ${BOOTLOADER_PATH} ]; then
-		echo "bootloader dir not defined"
-		exit 1
-	fi
+if [ -v BOOTLOADER ] && [ ! -f ${BOOTLOADER_FILE} ]; then
+	echo "bootloader file not present"
+	exit 1
 fi
 
 if [ -v BOOTLOADER ]; then
-	FLASH_BOOTLOADER="flash write_image erase ${BOOTLOADER_PATH}/stm32f429i-disco.bin 0x08000000"
+	FLASH_BOOTLOADER="flash write_image erase ${BOOTLOADER_FILE} 0x08000000"
 fi
 
 if [ -v DEVICETREE ]; then
@@ -109,6 +125,7 @@ if [ -v KERNEL ]; then
 fi
 
 echo bootloader: ${BOOTLOADER}
+echo bootloader appended with dtb: ${APPENDED}
 echo dtb: ${DEVICETREE}
 echo kernel: ${KERNEL}
 echo bootloader path: ${BOOTLOADER_PATH}
