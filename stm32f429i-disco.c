@@ -174,7 +174,11 @@ int main(void)
 	gpio_set_usart(gpio_base, 'A', 10, 7);
 
 	usart_setup(usart_base, PLLCLK_HZ/2);
-	usart_putch(usart_base, '.');
+
+	usart_putch(usart_base, '*');
+	usart_putch(usart_base, '*');
+	usart_putch(usart_base, '*');
+	usart_putch(usart_base, '\n');
 
 	start_kernel();
 
