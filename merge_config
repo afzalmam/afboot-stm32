@@ -1,0 +1,18 @@
+CONFIG_XIP_DEFLATED_DATA=y
+# CONFIG_STACKPROTECTOR is not set
+# CONFIG_RD_BZIP2 is not set
+# CONFIG_RD_LZMA is not set
+# CONFIG_RD_XZ is not set
+# CONFIG_RD_LZO is not set
+# CONFIG_RD_LZ4 is not set
+
+# CONFIG_EXT3_FS is not set
+# CONFIG_CRYPTO is not set
+# CONFIG_MACH_STM32F469 is not set
+# CONFIG_MACH_STM32F746 is not set
+# CONFIG_MACH_STM32F769 is not set
+# CONFIG_MACH_STM32H743 is not set
+# CONFIG_PREEMPT is not set
+
+CONFIG_INITRAMFS_SOURCE="/devel/src/buildroot2/output/images/rootfs.cpio"
+
