@@ -12,7 +12,7 @@ CONFIG_XIP_DEFLATED_DATA=y
 # CONFIG_MACH_STM32F746 is not set
 # CONFIG_MACH_STM32F769 is not set
 # CONFIG_MACH_STM32H743 is not set
-# CONFIG_PREEMPT is not set
+# CONFIG_MMC is not set
 
 CONFIG_INITRAMFS_SOURCE="/devel/src/buildroot2/output/images/rootfs.cpio"
 
