@@ -4,7 +4,7 @@
 # Note that we use "$@" to let each command-line parameter expand to a
 # separate word. The quotes around "$@" are essential!
 # We need TEMP as the 'eval set --' would nuke the return value of getopt.
-TEMP=$(getopt -o 'ab::d::hk:' --long 'appended,bootloader::,devicetree::,help,kernel:' -n 'flash.sh' -- "$@")
+TEMP=$(getopt -o 'b:d::hk:' --long 'bootloader:,devicetree::,help,kernel:' -n 'flash.sh' -- "$@")
 if [ $? -ne 0 ]; then
 	echo 'Terminating...' >&2
 	exit 1
@@ -16,8 +16,7 @@ unset TEMP
 usage ()
 {
  echo "Usage: $0 -b<bootloader path>|--bootloader=<bootloader path> -d<devicetree path>|--devicetree=<devicetree path> -k<kernel path>|--kernel=<kernel path>"
- echo "OR"
- echo "Usage: $0 -b<bootloader path>|--bootloader=<bootloader path> -a|--appended -k<kernel path>|--kernel=<kernel path>"
+ echo "       Note that bootloader can be made appended dtb one using bl_dtb_append.sh, in that case device tree is not required "
 }
 
 while true; do
@@ -26,21 +25,9 @@ while true; do
 			usage
 			exit 1
 		;;
-		'-a'|'--appended')
-			APPENDED=1
-			shift
-			continue
-		;;
 		'-b'|'--bootloader')
 			BOOTLOADER=1
-			case "$2" in
-				'')
-					BOOTLOADER_PATH=.
-				;;
-				*)
-					BOOTLOADER_PATH=$2
-				;;
-			esac
+			BOOTLOADER_FILE=$2
 			shift 2
 			continue
 		;;
@@ -72,17 +59,6 @@ while true; do
 		;;
 	esac
 done
-
-if [ -v DEVICETREE ] && [ -v APPENDED ]; then
-	echo "incompatible options passed: devicetree & appended bootloader"
-	exit 1
-fi
-
-if [ -v APPENDED ]; then
-	BOOTLOADER_FILE=${BOOTLOADER_PATH}/stm32f429i-disco.bindtb
-else
-	BOOTLOADER_FILE=${BOOTLOADER_PATH}/stm32f429i-disco.bin
-fi
 
 if [ -v DEVICETREE ]; then
 	if [ ! -v DEVICETREE_PATH ]; then
@@ -124,13 +100,18 @@ if [ -v KERNEL ]; then
 	FLASH_KERNEL="flash write_image erase ${KERNEL_PATH}/arch/arm/boot/xipImage 0x08008000"
 fi
 
-echo bootloader: ${BOOTLOADER}
-echo bootloader appended with dtb: ${APPENDED}
-echo dtb: ${DEVICETREE}
-echo kernel: ${KERNEL}
-echo bootloader path: ${BOOTLOADER_PATH}
-echo dtb path: ${DEVICETREE_PATH}
-echo kernel path: ${KERNEL_PATH}
+if [ -v BOOTLOADER ]; then
+	echo bootloader will be flashed
+	echo bootloader file: ${BOOTLOADER_FILE}
+fi
+if [ -v DEVICETREE ]; then
+	echo dtb will be flashed
+	echo dtb path: ${DEVICETREE_PATH}
+fi
+if [ -v KERNEL ]; then
+	echo kernel will be flashed
+	echo kernel path: ${KERNEL_PATH}
+fi
 
 openocd -f board/stm32f429disc1.cfg -c "init" -c "reset init" -c "flash probe 0" -c "flash info 0" \
 	-c "${FLASH_BOOTLOADER}" -c "${FLASH_DEVICETREE}" -c "${FLASH_KERNEL}" \
