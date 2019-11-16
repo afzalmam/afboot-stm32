@@ -23,3 +23,5 @@ make ARCH=arm CROSS_COMPILE=arm-known-linux-gnueabihf- clean
 make ARCH=arm CROSS_COMPILE=arm-known-linux-gnueabihf- stm32f429i-disco DTB_ADDR=${BL_SIZE}
 
 cat ${BOOTLOADER_FILE} ${DTB_FILE} > ${OUTPUT_FILE}
+
+make ARCH=arm CROSS_COMPILE=arm-known-linux-gnueabihf- clean
